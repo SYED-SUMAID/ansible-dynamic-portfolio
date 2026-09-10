@@ -2,6 +2,8 @@
 - name: Setup Dynamic PHP Portfolio
   hosts: localhost
   become: true
+  vars:
+    ansible_remote_tmp: /tmp/ansible
 
   tasks:
 
@@ -78,4 +80,3 @@
       ansible.builtin.service:
         name: apache2
         state: restarted
-
