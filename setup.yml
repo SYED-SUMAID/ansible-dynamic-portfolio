@@ -1,0 +1,81 @@
+---
+- name: Setup Dynamic PHP Portfolio
+  hosts: local
+  become: true
+
+  tasks:
+
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+
+    - name: Install Apache PHP PostgreSQL
+      ansible.builtin.apt:
+        name:
+          - apache2
+          - php
+          - libapache2-mod-php
+          - php-pgsql
+          - postgresql
+          - postgresql-contrib
+          - python3-psycopg2
+        state: present
+
+    - name: Start and enable Apache
+      ansible.builtin.service:
+        name: apache2
+        state: started
+        enabled: true
+
+    - name: Start and enable PostgreSQL
+      ansible.builtin.service:
+        name: postgresql
+        state: started
+        enabled: true
+
+    - name: Create PostgreSQL database
+      become_user: postgres
+      community.postgresql.postgresql_db:
+        name: vn7
+        state: present
+
+    - name: Create PostgreSQL user
+      become_user: postgres
+      community.postgresql.postgresql_user:
+        name: code
+        password: "12345"
+        state: present
+
+    - name: Give database access to code user
+      become_user: postgres
+      community.postgresql.postgresql_privs:
+        database: vn7
+        type: database
+        roles: code
+        privs: ALL
+        state: present
+
+    - name: Copy PHP portfolio
+      ansible.builtin.copy:
+        src: files/index.php
+        dest: /var/www/html/index.php
+        owner: www-data
+        group: www-data
+        mode: '0644'
+
+    - name: Copy init SQL file
+      ansible.builtin.copy:
+        src: files/init.sql
+        dest: /tmp/init.sql
+        mode: '0644'
+
+    - name: Run database initialization
+      become_user: postgres
+      ansible.builtin.command:
+        cmd: psql -d vn7 -f /tmp/init.sql
+
+    - name: Restart Apache
+      ansible.builtin.service:
+        name: apache2
+        state: restarted
+
