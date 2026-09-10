@@ -1,6 +1,6 @@
 ---
 - name: Setup Dynamic PHP Portfolio
-  hosts: local
+  hosts: localhost
   become: true
 
   tasks:
