@@ -2,8 +2,6 @@
 - name: Setup Dynamic PHP Portfolio
   hosts: localhost
   become: true
-  vars:
-    ansible_remote_tmp: /tmp/ansible
 
   tasks:
 
@@ -21,6 +19,7 @@
           - postgresql
           - postgresql-contrib
           - python3-psycopg2
+          - acl
         state: present
 
     - name: Start and enable Apache
